@@ -1,0 +1,77 @@
+import java.io.*;
+import java.util.*;
+
+public class islands {
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        String[] dimensions = br.readLine().split(" ");
+        int rows = Integer.parseInt(dimensions[0]);
+        int cols = Integer.parseInt(dimensions[1]);
+
+        char[][] grid = new char[rows][cols];
+        for (int i = 0; i < rows; i++) {
+            grid[i] = br.readLine().toCharArray();
+        }
+
+        boolean[][] visited = new boolean[rows][cols];
+        int islandCount = 0;
+
+        // Perform BFS/DFS for each land cell that is not visited
+        for (int i = 0; i < rows; i++) {
+            for (int j = 0; j < cols; j++) {
+                // Start a new island search if we find an unvisited land or adjacent cloud cell
+                if ((grid[i][j] == 'L' || grid[i][j] == 'C') && !visited[i][j]) {
+                    if (isPartOfIsland(grid, visited, i, j, rows, cols)) {
+                        islandCount++;
+                    }
+                }
+            }
+        }
+
+        System.out.println(islandCount);
+    }
+
+    // BFS flood-fill function to mark all land or cloud cells connected to (i, j)
+    private static boolean isPartOfIsland(char[][] grid, boolean[][] visited, int i, int j, int rows, int cols) {
+        boolean hasLand = false;
+        Queue<int[]> queue = new LinkedList<>();
+        queue.offer(new int[] {i, j});
+        visited[i][j] = true;
+
+        int[] dRow = {-1, 1, 0, 0}; // Row direction offsets for up, down, left, right
+        int[] dCol = {0, 0, -1, 1}; // Column direction offsets for up, down, left, right
+
+        while (!queue.isEmpty()) {
+            int[] cell = queue.poll();
+            int row = cell[0];
+            int col = cell[1];
+
+            // Check if the current cell is land
+            if (grid[row][col] == 'L') {
+                hasLand = true;
+            }
+
+            // Traverse all four possible directions
+            for (int k = 0; k < 4; k++) {
+                int newRow = row + dRow[k];
+                int newCol = col + dCol[k];
+
+                // Only consider valid cells within bounds
+                if (isValid(newRow, newCol, rows, cols) && !visited[newRow][newCol] &&
+                    (grid[newRow][newCol] == 'L' || grid[newRow][newCol] == 'C')) {
+
+                    visited[newRow][newCol] = true;
+                    queue.offer(new int[] {newRow, newCol});
+                }
+            }
+        }
+
+        // Only increment island count if we actually encountered land
+        return hasLand;
+    }
+
+    // Check if a cell is within the grid bounds
+    private static boolean isValid(int row, int col, int rows, int cols) {
+        return row >= 0 && row < rows && col >= 0 && col < cols;
+    }
+}
